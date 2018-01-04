@@ -1,26 +1,18 @@
 # notification.py
 
+from enum import Enum
+
 class Notification:
 
-    class NotificationCategory:
+    class NotificationCategory(Enum):
         MKTDATA=0
         ADMIN=1
         
-        __list = ["MKTDATA", "ADMIN"]
-        @classmethod
-        def as_text(self, v):
-            return (self.__list[v])
-        
-    class NotificationType:
+    class NotificationType(Enum):
         NEW=0
         UPDATE=1
         FIELD=2
         ERROR=3
- 
-        __list = ["NEW","UPDATE","FIELD","ERROR"]       
-        @classmethod
-        def as_text(self,v):
-            return (self.__list[v])
         
     def __init__(self,notification_category,notification_type,notification_source,field_changes=[],error_code=0,error_message=""):
         self.category = notification_category
