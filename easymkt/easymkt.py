@@ -93,7 +93,7 @@ class EasyMKT:
             subscriptions.add(security.name, flds[:-1], "", c_id)
             self.session.subscribe(subscriptions)
             self.subscription_message_handlers[c_id.value()] = security.process_message
-            print("Request submitted (" + str(c_id.value())  + "): " + security.name + "/" +str(flds[:-1])+"\n")
+            #print("Request submitted (" + str(c_id.value())  + "): " + security.name + "/" +str(flds[:-1])+"\n")
             
         except Exception as err:
             print("EasyMKT >>  Error subscribing to topic: " + str(err))
@@ -231,6 +231,8 @@ class EasyMKT:
             if not notification.consumed: 
                 h(notification)
 
+    def stop(self):
+        self.session.stop()
 
 __copyright__ = """
 Copyright 2018. Bloomberg Finance L.P.
