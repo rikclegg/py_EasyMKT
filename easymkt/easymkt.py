@@ -58,7 +58,10 @@ class EasyMKT:
         if not self.session.start():
             raise ("Failed to start session.")
             return
-
+        
+        while not self.ready:
+            pass
+    
     def add_field(self, field_name):
         self.subscription_fields.append(field_name)
         
@@ -79,7 +82,7 @@ class EasyMKT:
 #            print("Request submitted (" + str(cID)  + "): \n" + str(req))
                 
         except Exception as err:
-            print("EasyMSX >>  Error sending request: " + str(err))
+            print("EasyMSX >>  Error submitting request: " + str(err))
             
 
     def add_subscription(self, security):
@@ -118,7 +121,7 @@ class EasyMKT:
         elif event.eventType() == blpapi.Event.SUBSCRIPTION_STATUS:
             self.process_subscription_status_event(event,session)
 
-        elif event.eventType() == blpapi.Event.RESPONSE:
+        elif event.eventType() == blpapi.Event.RESPONSE or event.eventType() == blpapi.Event.PARTIAL_RESPONSE:
             self.process_response_event(event, session)
         
         else:
@@ -210,8 +213,10 @@ class EasyMKT:
             c_id = msg.correlationIds()[0].value()
             if c_id in self.request_message_handlers:
                 handler = self.request_message_handlers[c_id]
-                handler(msg)
-                del self.request_message_handlers[c_id]
+                partial = (event.eventType()== blpapi.Event.PARTIAL_RESPONSE) 
+                handler(msg,partial)
+                if not partial:
+                    del self.request_message_handlers[c_id]
             else:
                 print("Unrecognised correlation ID in response event. No event handler can be found for cID: " + str(c_id)) 
         
@@ -233,6 +238,34 @@ class EasyMKT:
 
     def stop(self):
         self.session.stop()
+        
+            
+    def send_request(self,req,message_handler=None):
+        try:
+            if message_handler==None:
+                self.external_wait=True
+                cID = self.session.sendRequest(request=req)
+                self.request_message_handlers[cID.value()] = self.process_external_response
+                while self.external_wait:
+                    pass
+                return self.external_message
+                
+            else:
+                cID = self.session.sendRequest(request=req)
+                self.request_message_handlers[cID.value()] = message_handler
+                #print("Request submitted (" + str(cID)  + "): \n" + str(req))
+                
+        except Exception as err:
+            print("EasyMKT >>  Error sending request: " + str(err))
+
+    
+    def process_external_response(self,message,partial):
+        self.external_message = message
+        self.external_wait = False
+        
+    
+    def create_request(self, operation):
+        return self.refdata.createRequest(operation)
 
 __copyright__ = """
 Copyright 2018. Bloomberg Finance L.P.

@@ -37,3 +37,71 @@ class TestEasyMKT(unittest.TestCase):
             raised=True
         
         self.assertFalse(raised)
+
+
+    def test_external_request_non_blocking(self):
+        
+        raised = False
+
+        try:
+            emkt = easymkt.EasyMKT()
+            emkt.start()
+            
+            req = emkt.create_request("ReferenceDataRequest")
+            
+            req.append("securities", "IBM US Equity")
+            req.append("securities", "MSFT US Equity")
+
+            req.append("fields", "PX_LAST")
+            req.append("fields", "DS002")
+
+            self.pending_result=True
+            
+            emkt.send_request(req, self.message_handler)
+            
+        except BaseException as e:
+            print("Error: " + str(e))
+            raised=True
+            
+        self.pending_result=True
+        
+        while self.pending_result:
+            pass
+            
+        self.assertFalse(raised)
+
+
+    def message_handler(self,msg,partial):
+        print (msg)
+        if not partial:
+            self.pending_result=False
+        
+        
+    def test_external_request_blocking(self):
+        
+        raised = False
+
+        msg = None
+        
+        try:
+            emkt = easymkt.EasyMKT()
+            emkt.start()
+            
+            req = emkt.create_request("ReferenceDataRequest")
+            
+            req.append("securities", "IBM US Equity")
+            req.append("securities", "MSFT US Equity")
+
+            req.append("fields", "PX_LAST")
+            req.append("fields", "DS002")
+
+            msg = emkt.send_request(req)
+
+        except BaseException as e:
+            print("Error: " + str(e))
+            raised=True
+            
+           
+        print(msg)
+        
+        self.assertFalse(raised)
