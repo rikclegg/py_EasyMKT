@@ -50,10 +50,8 @@ class TestEasyMKT(unittest.TestCase):
             req = emkt.create_request("ReferenceDataRequest")
             
             req.append("securities", "IBM US Equity")
-            req.append("securities", "MSFT US Equity")
 
             req.append("fields", "PX_LAST")
-            req.append("fields", "DS002")
 
             self.pending_result=True
             
@@ -90,13 +88,14 @@ class TestEasyMKT(unittest.TestCase):
             req = emkt.create_request("ReferenceDataRequest")
             
             req.append("securities", "IBM US Equity")
-            req.append("securities", "MSFT US Equity")
 
             req.append("fields", "PX_LAST")
-            req.append("fields", "DS002")
 
             msg = emkt.send_request(req)
 
+            pxlast = msg.getElement("securityData").getValue(0).getElement("fieldData").getElement("PX_LAST").getValue()
+            print(pxlast)
+            
         except BaseException as e:
             print("Error: " + str(e))
             raised=True
